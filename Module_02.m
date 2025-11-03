@@ -58,10 +58,10 @@ sR = convolveFFT_OLS(s,h_direct(:,2),256, false);
 %DRR
 xL = s(:,1); %original dry signal
 xR = s(:,2); %original dry signal
-sL_hat = (:,1)%derevered signal
-sR_hat = (:,2)%dereverbed signal
-DRR_pre = (sum(sL.^2) + sum(sR.^2))/(sum(xL-sL).^2 - sum(xR-sR).^2);
-DRR_post = (sum(sL.^2) + sum(sR.^2))/(sum(sL_hat-sL).^2 - sum(sR_hat-sR).^2);
+sL_hat = ??(:,1); %derevered signal
+sR_hat = ??(:,2); %dereverbed signal
+DRR_pre = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum(xL-sL).^2 - sum(xR-sR).^2));
+DRR_post = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum(sL_hat-sL).^2 - sum(sR_hat-sR).^2));
 delta_DRR = DRR_post - DRR_pre;
 
 %%HOW TO PICK TAUS???
