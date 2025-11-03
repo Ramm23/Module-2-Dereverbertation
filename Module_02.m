@@ -76,8 +76,8 @@ SL = (abs(XL) .* G) .* exp(1j*angle(XL));
 SR = (abs(XR) .* G) .* exp(1j*angle(XR));
 
 %% ISTFT SYNTHESIS (WOLA)  
-sL = istft(SL, w, R, 'wola', numel(xL));
-sR = istft(SR, w, R, 'wola', numel(xR));
+sL = istft(SL, w, R, 'wola', numel(xL)); %dereverbed signal left
+sR = istft(SR, w, R, 'wola', numel(xR)); %dereverbed signal right
 
 %% LISTEN / SAVE / QUICK LOOKS
 
@@ -158,4 +158,20 @@ title('Reverberant Left');
 subplot(2,1,2);
 spectrogram(sLplt, hamming(512), 384, 512, fsHz, 'yaxis');
 title('Dereverberated Left');
+
+%% ANALYSIS USING THE DRR
+% Create the reference signal without reverberation 
+% direct impulse response:
+[h_direct, h_reverb] = splitBRIR(hFile,fsHz);
+
+% getting binaural signals
+sL = convolveFFT_OLS(s,h_direct(:,1));
+sR = convolveFFT_OLS(s,h_direct(:,2));
+
+%DRR
+sL_hat = derevLR(:,1); %derevered signal
+sR_hat = derevLR(:,2); %dereverbed signal
+DRR_pre = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum((xL-sL).^2) + sum((xR-sR).^2)));
+DRR_post = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum((sL_hat-sL).^2) + sum((sR_hat-sR).^2)));
+delta_DRR = DRR_post - DRR_pre
 
