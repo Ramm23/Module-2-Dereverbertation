@@ -8,11 +8,11 @@ addpath tools
 %% USER PARAMETERS
 fsHz    = 16e3;                 % Sampling frequency
 fileName = 'speech@24kHz.wav';  % Source signal (will be resampled in readAudio)
-roomName = 'Room_D_45deg.wav';  % Impulse response (BRIR) : 'Room_A_45deg.wav' 'Room_D_45deg.wav' 'Cortex_45deg.wav' 'HATS.wav'
+roomName = 'Room_A_45deg.wav';  % Impulse response (BRIR) : 'Room_A_45deg.wav' 'Room_D_45deg.wav' 'Cortex_45deg.wav' 'HATS.wav'
 
 % Window length (analysis window) and coherence smoothing time constant
 winSec = 8e-3;      % per module default (8 ms)  
-tauSec = 60e-3;     % time constant for coherence smoothing (tune in experiments)
+tauSec = 0.15;     % time constant for coherence smoothing (tune in experiments)
 
 %% CREATE BINAURAL SIGNAL
 % Load source signal (mono)
@@ -161,17 +161,38 @@ title('Dereverberated Left');
 
 %% ANALYSIS USING THE DRR
 % Create the reference signal without reverberation 
-% direct impulse response:
-[h_direct, h_reverb] = splitBRIR(hFile,fsHz);
+% --- Build the DRR reference from the direct-path BRIR ---
+[h_direct, ~] = splitBRIR(hFile, fsHz);           % use the same (trimmed, normalized) hFile
 
-% getting binaural signals
-sL = convolveFFT_OLS(s,h_direct(:,1));
-sR = convolveFFT_OLS(s,h_direct(:,2));
+sL_dir = convolveFFT_OLS(s, h_direct(:,1));       % clean direct-path left
+sR_dir = convolveFFT_OLS(s, h_direct(:,2));       % clean direct-path right
 
-%DRR
-sL_hat = derevLR(:,1); %derevered signal
-sR_hat = derevLR(:,2); %dereverbed signal
-DRR_pre = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum((xL-sL).^2) + sum((xR-sR).^2)));
-DRR_post = 10*log10((sum(sL.^2) + sum(sR.^2))/(sum((sL_hat-sL).^2) + sum((sR_hat-sR).^2)));
+% Raw reverberant (from full BRIR) and raw dereverbed (from ISTFT)
+xL_rev = xL;  xR_rev = xR;                        % reverberant
+sL_der = sL;  sR_der = sR;                        % dereverbed
+
+% Align lengths
+Lmin = min([numel(sL_dir), numel(xL_rev), numel(sL_der)]);
+sL_dir = sL_dir(1:Lmin); sR_dir = sR_dir(1:Lmin);
+xL_rev = xL_rev(1:Lmin); xR_rev = xR_rev(1:Lmin);
+sL_der = sL_der(1:Lmin); sR_der = sR_der(1:Lmin);
+
+% DRR per assignment
+num      = sum(sL_dir.^2) + sum(sR_dir.^2);
+den_pre  = sum((xL_rev - sL_dir).^2) + sum((xR_rev - sR_dir).^2);
+den_post = sum((sL_der - sL_dir).^2) + sum((sR_der - sR_dir).^2);
+
+DRR_pre   = 10*log10(num / max(den_pre,  1e-20));
+DRR_post  = 10*log10(num / max(den_post, 1e-20));
 delta_DRR = DRR_post - DRR_pre
 
+
+%GAIN PLOT
+Fpos = (0:M/2)*(fsHz/M);                 % one-sided freqs, length M/2+1
+Tstf = (0:size(G,2)-1)*(R/fsHz);         % your STFT frame times
+Gpos_dB = 20*log10(max(G(1:numel(Fpos),:), 1e-4));
+
+figure('Name','Gain (|C|^2)'); 
+imagesc(Tstf, Fpos, Gpos_dB); axis xy; colorbar;
+xlabel('Time [s]'); ylabel('Frequency [Hz]');
+clim([-40 0]); title('Coherence-based Gain (dB)');

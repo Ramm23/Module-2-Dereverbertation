@@ -19,8 +19,8 @@ phiRR = XR .* conj(XR);
 phiLR = XL .* conj(XR);
 
 % Perform smoothing
+b = [1 - alpha];
 a = [1, -alpha];
-b = 1 -alpha;
 
 phiLL_smooth = filter(b, a, phiLL,[],2);
 phiRR_smooth = filter(b, a, phiRR, [], 2);
