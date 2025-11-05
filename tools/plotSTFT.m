@@ -1,0 +1,85 @@
+function h = plotSTFT(t,f,X,fs,bLog,DRdB,titleStr)
+%plotSTFT   Plot the STFT representation 
+% 
+%USAGE
+%   h = plotSTFT(t,f,X,fs)
+%   h = plotSTFT(t,f,X,fs,bLog,DRdB)
+%
+%INPUT ARGUMENTS
+%      t : time vector in seconds [1 x L]
+%      f : frequency vector in Hertz [M x 1]
+%      X : complex STFT matrix [M x L]
+%     fs : sampling frequency in Hertz
+%   bLog : binary flag indicating if a logarithmic frequency axis should be
+%          used (default, bLog = false)
+%   DRdB : dynamic range of the spectrogram in dB (default, DRdB = 60)
+%
+%OUTPUT ARGUMENTS
+%   h : figure handle
+% 
+%   plotSTFT(...) plots the STFT in a new figure.
+
+%   Developed with Matlab 9.8.0.1451342 (R2020a) Update 5. Please send bug
+%   reports to 
+%
+%   Author  :  Tobias May, © 2020
+%              Technical University of Denmark
+%              tobmay@.dtu.dk
+%
+%   History :
+%   v.0.1   2020/09/15
+%   ***********************************************************************
+
+
+%% CHECK INPUT ARGUMENTS
+%
+%
+% Check for proper input arguments
+if nargin < 4 || nargin > 7
+    help(mfilename);
+    error('Wrong number of input arguments!')
+end
+
+% Set default values
+if nargin < 5 || isempty(bLog); bLog = false; end
+if nargin < 6 || isempty(DRdB); DRdB = 60;    end
+
+%% PLOT SPECTROGRAM
+
+XdB = 20 * log10(abs(X));   % convert to dB magnitude
+XdB = XdB - max(XdB(:));          % normalize so max = 0 dB
+range = [-DRdB 0];                % dynamic range
+
+disp('Dynamic Range STFT')
+disp(range)
+
+% Select frequency scaling
+if bLog
+    % Logarithmic frequency grid
+    fLogHz = 2.^(-20:20) * 1E3;
+    fLogHz = fLogHz(fLogHz >= f(2) & fLogHz <= fs/2);
+    
+    % Show STFT with logarithmic frequency axis
+    h = figure;
+    pcolor(t,f,XdB);
+    shading flat;
+    colormap(colormapVoicebox);
+    colorbar;
+    set(gca,'yscale','log','clim',range)
+    set(gca,'ytick',fLogHz,'yticklabel',num2str(fLogHz'))
+    ylim([0 fs/2])
+    xlabel('Time (s)')
+    ylabel('Frequency (Hz)')
+    title(titleStr)
+else
+    % Show STFT with linear frequency axis
+    h = figure;
+    imagesc(t(:)',f(:)*1e-3,XdB,range);
+    axis xy;
+    colormap(colormapVoicebox);
+    colorbar;
+    ylim([0 fs/2*1e-3])
+    xlabel('Time (s)')
+    ylabel('Frequency (Hz)')
+    title(titleStr)
+end

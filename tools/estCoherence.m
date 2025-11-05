@@ -19,15 +19,15 @@ phiRR = XR .* conj(XR);
 phiLR = XL .* conj(XR);
 
 % Perform smoothing
+b = (1 -alpha);
 a = [1, -alpha];
-b = [1, -alpha];
 
-phiLL_smooth = filter(b,a,phiLL,[],2);
+phiLL_smooth = filter(b, a, phiLL, [], 2);
 phiRR_smooth = filter(b, a, phiRR, [], 2);
 phiLR_smooth = filter(b, a, phiLR, [], 2);
 
 % Compute the short-term interaural coherence
-C = phiLR_smooth ./ sqrt(phiLL_smooth.*phiRR_smooth);
+C = phiLR_smooth ./ sqrt(phiLL_smooth .* phiRR_smooth);
 
 
 end
