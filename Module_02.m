@@ -8,11 +8,11 @@ addpath tools
 %% USER PARAMETERS
 fsHz    = 16e3;                 % Sampling frequency
 fileName = 'speech@24kHz.wav';  % Source signal (will be resampled in readAudio)
-roomName = 'Room_A_45deg.wav';  % Impulse response (BRIR) : 'Room_A_45deg.wav' 'Room_D_45deg.wav' 'Cortex_45deg.wav' 'HATS.wav'
+roomName = 'Room_D_45deg.wav';  % Impulse response (BRIR) : 'Room_A_45deg.wav' 'Room_D_45deg.wav' 'Cortex_45deg.wav' 'HATS.wav'
 
 % Window length (analysis window) and coherence smoothing time constant
 winSec = 8e-3;      % per module default (8 ms)  
-tauSec = 0.15;     % time constant for coherence smoothing (tune in experiments)
+tauSec = 0.06;     % time constant for coherence smoothing (tune in experiments)
 
 %% CREATE BINAURAL SIGNAL
 % Load source signal (mono)
