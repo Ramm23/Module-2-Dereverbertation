@@ -24,8 +24,8 @@ fileName = 'speech@24kHz.wav';
 % Impulse response
 % roomName = 'Cortex_45deg.wav';
 % roomName = 'Room_A_45deg.wav';          
-roomName = 'Room_D_45deg.wav';      % reverberant room
-% roomName = 'HATS_test.wav';
+% roomName = 'Room_D_45deg.wav';      % reverberant room
+roomName = 'HATS_test.wav';
 
 
 % Window length
@@ -107,7 +107,7 @@ plotSTFT(tSTFT, fSTFT, XR, fsHz, false, dRdB, title2);
 
 
 %% PERFORM COHERENCE-BASED DEREVERBERATION
-tauSec = 0.06;
+tauSec = 0.1;
 
 
 [sL_hat, sR_hat, G] = dereverb(xL, xR, fsHz, winSec, tauSec);
@@ -208,7 +208,7 @@ w = cola(N,R,'hamming', 'wola');    % Window
 
 
 % sound(s, fsHz)
-% sound(sL_ref, fsHz)
+sound(sL_ref, fsHz)
 % sound(sL_hat, fsHz)
 % sound(xL, fsHz)
 
@@ -265,13 +265,10 @@ grid on
 
 %% DRR improvement
 
-delta_DRR = [];
-tauSec_array = [];
+tauSec_array = 0:0.1:0.9;
 
-tauSec_array = 0:0.01:0.9;
-
-
-for i = 1:length(tauSec_array)
+for i = length(tauSec_array)
+    for i = 1:length(tauSec_array)
     tauSec = tauSec_array(i);
     [sL_hat, sR_hat, G] = dereverb(xL, xR, fsHz, winSec, tauSec);
     
@@ -286,6 +283,7 @@ for i = 1:length(tauSec_array)
     DRR_pre(i) = 10*log10(E_dir / E_rev_pre);
     DRR_post(i) = 10*log10(E_dir / E_rev_post);
     delta_DRR(i) = DRR_post(i) - DRR_pre(i);
+    disp(delta_DRR)
 end
 
 % xL = convolveFFT_OLS(s, hL);
@@ -304,13 +302,14 @@ end
 % DRR_post = 10*log10(E_dir / E_rev_post);
 % delta_DRR = DRR_post - DRR_pre;
 
+disp(delta_DRR)
 
 
 
 %% STFT of gain, G
 
 
-tauSec = 0.06;
+tauSec = 0.05;
 
 [sL_hat, sR_hat, G] = dereverb(xL, xR, fsHz, winSec, tauSec);
 
